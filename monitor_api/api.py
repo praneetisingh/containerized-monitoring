@@ -1,0 +1,46 @@
+from flask import Flask, jsonify
+from collections import Counter
+import os
+
+app = Flask(__name__)
+
+# Path to the log file created by demo_app
+LOG_FILE = os.path.join("..", "demo_app", "app.log")
+
+def read_logs(limit=50):
+    if not os.path.exists(LOG_FILE):
+        return []
+
+    with open(LOG_FILE, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+
+    return [line.strip() for line in lines[-limit:]]
+
+def count_levels(lines):
+    counts = Counter()
+    for line in lines:
+        if " INFO " in line:
+            counts["INFO"] += 1
+        elif " WARNING " in line:
+            counts["WARNING"] += 1
+        elif " ERROR " in line:
+            counts["ERROR"] += 1
+    return counts
+
+@app.route("/logs")
+def logs():
+    lines = read_logs(limit=50)
+    return jsonify(lines)
+
+@app.route("/summary")
+def summary():
+    lines = read_logs(limit=500)
+    counts = count_levels(lines)
+    return jsonify(counts)
+
+@app.route("/")
+def home():
+    return "Monitoring API Running ✅"
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8000)
