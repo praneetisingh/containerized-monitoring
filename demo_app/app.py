@@ -27,11 +27,6 @@ def slow():
     time.sleep(2)
     return "Slow response"
 
-@app.route("/crash")
-def crash():
-    logging.error("Application crashed intentionally")
-    raise Exception("Crash")
-
 
 @app.route("/random")
 def random_event():
@@ -58,6 +53,27 @@ def load():
     request_count += 1
     logging.info(f"Load request number {request_count}")
     return f"Request number {request_count}"
+
+start_time = time.time()
+
+@app.route("/health")
+def health():
+    logging.info("Health check endpoint called")
+    return {"status": "application running"}
+
+@app.route("/uptime")
+def uptime():
+    current = time.time() - start_time
+    logging.info(f"Uptime checked: {current}")
+    return {"uptime_seconds": int(current)}
+
+@app.route("/crash")
+def crash():
+    try:
+        raise Exception("Crash simulation")
+    except Exception as e:
+        logging.critical(f"Application crash simulated: {str(e)}")
+        return "Crash simulated", 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
