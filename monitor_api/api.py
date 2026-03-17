@@ -25,6 +25,8 @@ def count_levels(lines):
             counts["WARNING"] += 1
         elif " ERROR " in line:
             counts["ERROR"] += 1
+        elif " CRITICAL " in line:
+            counts["CRITICAL"] += 1
     return counts
 
 @app.route("/logs")
