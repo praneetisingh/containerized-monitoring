@@ -32,6 +32,13 @@ def logs():
     lines = read_logs(limit=50)
     return jsonify(lines)
 
+@app.route("/logs/<level>")
+def logs_by_level(level):
+    level = level.upper()
+    lines = read_logs(limit=500)
+    filtered = [line for line in lines if f" {level} " in line]
+    return jsonify(filtered[-50:])
+
 @app.route("/summary")
 def summary():
     lines = read_logs(limit=500)
