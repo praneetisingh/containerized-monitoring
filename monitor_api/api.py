@@ -4,8 +4,8 @@ import os
 
 app = Flask(__name__)
 
-# Path to the log file created by demo_app
-LOG_FILE = os.path.join("..", "demo_app", "app.log")
+# Path to the log file created by demo_app (mounted via Docker volume)
+LOG_FILE = "/app/logs/app.log"
 
 def read_logs(limit=50):
     if not os.path.exists(LOG_FILE):

@@ -2,11 +2,16 @@ from flask import Flask
 import logging
 import time
 import random
+import os
 
 app = Flask(__name__)
 
+LOG_DIR = "/app/logs"
+os.makedirs(LOG_DIR, exist_ok=True)
+LOG_FILE = os.path.join(LOG_DIR, "app.log")
+
 logging.basicConfig(
-    filename="app.log",
+    filename=LOG_FILE,
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(message)s"
 )

@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  demo_app:
+    build:
+      context: ./demo_app
+    ports:
+      - "5000:5000"
+    volumes:
+      - shared-logs:/app/logs
+
+  monitor_api:
+    build:
+      context: ./monitor_api
+    ports:
+      - "8000:8000"
+    volumes:
+      - shared-logs:/app/logs
+
+volumes:
+  shared-logs:
