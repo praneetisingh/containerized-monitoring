@@ -17,5 +17,11 @@ services:
     volumes:
       - shared-logs:/app/logs
 
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:80"
+
 volumes:
   shared-logs:

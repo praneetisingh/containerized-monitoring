@@ -1,8 +1,10 @@
 from flask import Flask, jsonify
+from flask_cors import CORS
 from collections import Counter
 import os
 
 app = Flask(__name__)
+CORS(app)
 
 # Path to the log file created by demo_app (mounted via Docker volume)
 LOG_FILE = "/app/logs/app.log"

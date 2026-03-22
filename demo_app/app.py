@@ -1,10 +1,12 @@
 from flask import Flask
+from flask_cors import CORS
 import logging
 import time
 import random
 import os
 
 app = Flask(__name__)
+CORS(app)
 
 LOG_DIR = "/app/logs"
 os.makedirs(LOG_DIR, exist_ok=True)
