@@ -49,6 +49,12 @@ def summary():
     counts = count_levels(lines)
     return jsonify(counts)
 
+@app.route("/logs", methods=["DELETE"])
+def clear_logs():
+    if os.path.exists(LOG_FILE):
+        open(LOG_FILE, "w").close()
+    return jsonify({"status": "cleared"}), 200
+
 @app.route("/")
 def home():
     return "Monitoring API Running ✅"

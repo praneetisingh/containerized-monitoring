@@ -3,32 +3,46 @@ const DEMO_APP = 'http://localhost:5000';
 
 const uiElements = {
     apiStatus: document.getElementById('api-status'),
+    apiStatusText: document.querySelector('#api-status span'),
     countInfo: document.getElementById('count-info'),
     countWarning: document.getElementById('count-warning'),
     countError: document.getElementById('count-error'),
     countCritical: document.getElementById('count-critical'),
     logTerminal: document.getElementById('log-terminal'),
-    filterBtns: document.querySelectorAll('.filter-btn'),
+    filterBtns: document.querySelectorAll('.pill-btn'),
 };
 
 let currentFilter = 'ALL';
 let isAutoScrolling = true;
 
-// Handle Log Filtering
+// Handle Log Filtering Toggle
 uiElements.filterBtns.forEach(btn => {
     btn.addEventListener('click', (e) => {
         uiElements.filterBtns.forEach(b => b.classList.remove('active'));
         e.target.classList.add('active');
         currentFilter = e.target.getAttribute('data-level');
-        fetchLogs(); // refresh immediately
+        fetchLogs(); 
     });
 });
+
+// Handle Clear Logs
+const clearLogsBtn = document.getElementById('clear-logs-btn');
+if (clearLogsBtn) {
+    clearLogsBtn.addEventListener('click', async () => {
+        try {
+            await fetch(`${MONITOR_API}/logs`, { method: 'DELETE' });
+            fetchSummary();
+            fetchLogs();
+        } catch (error) {
+            console.error('Failed to clear logs:', error);
+        }
+    });
+}
 
 // Auto-scroll logic detection
 uiElements.logTerminal.addEventListener('scroll', () => {
     const { scrollTop, scrollHeight, clientHeight } = uiElements.logTerminal;
-    // If user scrolled up manually, turn off auto-scroll
-    if (scrollHeight - scrollTop - clientHeight > 10) {
+    if (scrollHeight - scrollTop - clientHeight > 15) {
         isAutoScrolling = false;
     } else {
         isAutoScrolling = true;
@@ -39,10 +53,9 @@ uiElements.logTerminal.addEventListener('scroll', () => {
 async function fetchSummary() {
     try {
         const response = await fetch(`${MONITOR_API}/summary`);
-        if (!response.ok) throw new Error('Network response was not ok');
+        if (!response.ok) throw new Error('API down');
         const data = await response.json();
         
-        // Ensure keys exist, default to 0
         animateValue(uiElements.countInfo, data.INFO || 0);
         animateValue(uiElements.countWarning, data.WARNING || 0);
         animateValue(uiElements.countError, data.ERROR || 0);
@@ -50,61 +63,55 @@ async function fetchSummary() {
 
         setApiStatus(true);
     } catch (error) {
-        console.error("Error fetching summary:", error);
         setApiStatus(false);
     }
 }
 
+// Number animation function
 function animateValue(obj, end) {
     const start = parseInt(obj.textContent) || 0;
     if (start === end) return;
     
-    const duration = 500;
+    // Smooth transition
+    const duration = 600; 
     const startTime = performance.now();
     
     function update(currentTime) {
         const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / duration, 1);
         
-        // Easing out function
-        const easeOut = 1 - Math.pow(1 - progress, 3);
-        const currentVal = Math.floor(start + (end - start) * easeOut);
+        // easeOutQuart
+        const ease = 1 - Math.pow(1 - progress, 4);
+        const currentVal = Math.floor(start + (end - start) * ease);
         
         obj.textContent = currentVal;
         
-        if (progress < 1) {
-            requestAnimationFrame(update);
-        } else {
-            obj.textContent = end;
-        }
+        if (progress < 1) requestAnimationFrame(update);
+        else obj.textContent = end;
     }
     requestAnimationFrame(update);
 }
 
 // Fetch live logs
-let lastLogCount = 0;
-
 async function fetchLogs() {
     try {
         const endpoint = currentFilter === 'ALL' ? '/logs' : `/logs/${currentFilter}`;
         const response = await fetch(`${MONITOR_API}${endpoint}`);
-        if (!response.ok) throw new Error('Network response was not ok');
+        if (!response.ok) throw new Error('API down');
         const logs = await response.json();
         
         renderLogs(logs);
         setApiStatus(true);
     } catch (error) {
-        console.error("Error fetching logs:", error);
         setApiStatus(false);
     }
 }
 
 function renderLogs(logs) {
-    // Only clear if empty or completely changed
     uiElements.logTerminal.innerHTML = '';
     
     if (logs.length === 0) {
-        uiElements.logTerminal.innerHTML = '<div class="log-line" style="color: var(--text-muted)">> Waiting for logs...</div>';
+        uiElements.logTerminal.innerHTML = '<div class="log-waiting">> No logs intercepted yet...</div>';
         return;
     }
 
@@ -112,15 +119,21 @@ function renderLogs(logs) {
         const div = document.createElement('div');
         div.className = 'log-line';
         
-        // Basic parsing of the log line "2023-10-10 12:00:00,000 INFO message..."
         const parts = log.split(' ');
         if (parts.length >= 3) {
             const date = parts[0];
-            const time = parts[1];
+            const time = parts[1].split(',')[0]; // Simplify time by removing ms
             const level = parts[2];
-            const msg = parts.slice(3).join(' ');
+            let msg = parts.slice(3).join(' ');
             
-            div.innerHTML = `<span class="log-timestamp">[${date} ${time}]</span> <span class="log-${level}">${level}</span> <span class="log-msg">${msg}</span>`;
+            // Basic formatting logic for different log levels
+            div.classList.add(`log-${level}`);
+            
+            div.innerHTML = `
+                <div class="log-timestamp">${time}</div>
+                <div class="log-badge">${level}</div>
+                <div class="log-msg">${msg}</div>
+            `;
         } else {
             div.textContent = log;
         }
@@ -133,45 +146,43 @@ function renderLogs(logs) {
     }
 }
 
-// Trigger actions on the Demo App
+// Trigger Demo App actions 
 async function triggerEndpoint(path) {
     try {
-        const response = await fetch(`${DEMO_APP}${path}`);
-        console.log(`Triggered ${path}:`, response.statusText);
+        fetch(`${DEMO_APP}${path}`).catch(e => console.error(e));
         
-        // Immediately trigger a fetch to make UI feel responsive
-        setTimeout(() => {
-            fetchSummary();
-            fetchLogs();
-        }, 500); // give app a moment to write to file
-        
+        // Fast-refresh UI to make it feel extremely responsive
+        setTimeout(fetchSummary, 200);
+        setTimeout(fetchLogs, 250);
+        setTimeout(fetchSummary, 600);
+        setTimeout(fetchLogs, 650);
     } catch (error) {
         console.error(`Failed to trigger ${path}:`, error);
-        alert(`Failed to trigger demo app endpoint. Ensure demo_app is running and CORS is enabled.`);
     }
 }
 
+// Status UI Handler
 function setApiStatus(isOnline) {
     if (isOnline) {
-        uiElements.apiStatus.textContent = 'API Connected';
-        uiElements.apiStatus.className = 'status-badge';
+        uiElements.apiStatus.className = 'connection-status online';
+        uiElements.apiStatusText.textContent = 'System Online';
     } else {
-        uiElements.apiStatus.textContent = 'API Disconnected';
-        uiElements.apiStatus.className = 'status-badge error';
+        uiElements.apiStatus.className = 'connection-status offline';
+        uiElements.apiStatusText.textContent = 'Disconnected';
     }
 }
 
-// Polling loop
-function startPolling() {
+// Start continuous polling sequence
+function launchTelemetry() {
     fetchSummary();
     fetchLogs();
     
-    // Refresh every 2 seconds
+    // Poll every 1.5s
     setInterval(() => {
         fetchSummary();
         fetchLogs();
-    }, 2000);
+    }, 1500);
 }
 
-// Initialize
-document.addEventListener('DOMContentLoaded', startPolling);
+// Init when DOM is ready
+document.addEventListener('DOMContentLoaded', launchTelemetry);
