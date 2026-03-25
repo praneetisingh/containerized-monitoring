@@ -12,19 +12,18 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.10"
+    - name: Build and Start Containers
+      run: docker-compose up --build -d
 
-    - name: Install Demo App Dependencies
-      run: pip install -r demo_app/requirements.txt
+    - name: Wait for services to initialize
+      run: sleep 5
 
-    - name: Test Demo App
-      run: pytest demo_app/test_app.py
+    - name: Test Demo App (Inside Docker)
+      run: docker-compose exec -T demo_app pytest test_app.py
 
-    - name: Install Monitor API Dependencies
-      run: pip install -r monitor_api/requirements.txt
+    - name: Test Monitor API (Inside Docker)
+      run: docker-compose exec -T monitor_api pytest test_api.py
 
-    - name: Test Monitor API
-      run: pytest monitor_api/test_api.py
+    - name: Cleanup Containers
+      if: always()
+      run: docker-compose down
