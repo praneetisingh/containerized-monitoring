@@ -1,10 +1,18 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from flasgger import Swagger
 from collections import Counter
 import os
 
 app = Flask(__name__)
 CORS(app)
+Swagger(app, template={
+    "info": {
+        "title": "Monitoring API",
+        "description": "Telemetry and logging API for parsing system events.",
+        "version": "1.0.0"
+    }
+})
 
 # Path to the log file created by demo_app (mounted via Docker volume)
 LOG_FILE = "/app/logs/app.log"
@@ -33,6 +41,19 @@ def count_levels(lines):
 
 @app.route("/logs")
 def logs():
+    """
+    Retrieve system logs
+    ---
+    parameters:
+      - name: search
+        in: query
+        type: string
+        required: false
+        description: Text to filter logs by
+    responses:
+      200:
+        description: A list of log strings
+    """
     # Allow filtering by a search query
     search = request.args.get('search', '', type=str).lower()
     
@@ -44,6 +65,19 @@ def logs():
 
 @app.route("/logs/<level>")
 def logs_by_level(level):
+    """
+    Retrieve logs by severity level
+    ---
+    parameters:
+      - name: level
+        in: path
+        type: string
+        required: true
+        description: Severity level (e.g., info, error, critical)
+    responses:
+      200:
+        description: A list of log strings matching the level
+    """
     level = level.upper()
     lines = read_logs(limit=500)
     filtered = [line for line in lines if f" {level} " in line]
@@ -51,12 +85,26 @@ def logs_by_level(level):
 
 @app.route("/summary")
 def summary():
+    """
+    Get log metric summary
+    ---
+    responses:
+      200:
+        description: A dictionary of log counts by level
+    """
     lines = read_logs(limit=500)
     counts = count_levels(lines)
     return jsonify(counts)
 
 @app.route("/logs", methods=["DELETE"])
 def clear_logs():
+    """
+    Erase all system logs
+    ---
+    responses:
+      200:
+        description: Status message indicating logs were cleared
+    """
     if os.path.exists(LOG_FILE):
         open(LOG_FILE, "w").close()
     return jsonify({"status": "cleared"}), 200
