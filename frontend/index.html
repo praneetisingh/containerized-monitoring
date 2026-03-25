@@ -156,6 +156,8 @@
                             <span>/app/logs/app.log</span>
                         </div>
                         <div class="console-filters">
+                            <input type="text" id="log-search" placeholder="Search logs..." style="background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--border-accent); border-radius: 6px; padding: 0.3rem 0.6rem; font-size: 0.75rem; margin-right: 0.5rem;" />
+                            <button class="pill-btn" id="export-csv-btn" style="border: 1px solid rgba(16, 185, 129, 0.4); color: var(--color-success);">Export CSV</button>
                             <button class="pill-btn danger-hover" id="clear-logs-btn" style="border: 1px dashed rgba(239, 68, 68, 0.4); color: #ef4444;">Clear Logs</button>
                             <button class="pill-btn active" data-level="ALL">All Events</button>
                             <button class="pill-btn" data-level="ERROR">Errors Only</button>

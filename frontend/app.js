@@ -25,6 +25,53 @@ uiElements.filterBtns.forEach(btn => {
     });
 });
 
+// Handle Live Search
+const searchInput = document.getElementById('log-search');
+let currentSearch = '';
+if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+        currentSearch = e.target.value;
+        fetchLogs();
+    });
+}
+
+// Handle CSV Export
+const exportBtn = document.getElementById('export-csv-btn');
+if (exportBtn) {
+    exportBtn.addEventListener('click', async () => {
+        try {
+            let endpoint = currentFilter === 'ALL' ? '/logs' : `/logs/${currentFilter}`;
+            if (currentSearch) endpoint += (endpoint.includes('?') ? '&' : '?') + `search=${encodeURIComponent(currentSearch)}`;
+            
+            const response = await fetch(`${MONITOR_API}${endpoint}`);
+            const logs = await response.json();
+            
+            let csvContent = "data:text/csv;charset=utf-8,Timestamp,Level,Message\n";
+            logs.forEach(log => {
+                const parts = log.split(' ');
+                if (parts.length >= 3) {
+                    const datetime = parts[0] + ' ' + parts[1];
+                    const level = parts[2];
+                    const msg = parts.slice(3).join(' ').replace(/"/g, '""');
+                    csvContent += `"${datetime}","${level}","${msg}"\n`;
+                } else {
+                    csvContent += `"${log.replace(/"/g, '""')}","",""\n`;
+                }
+            });
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "telemetry_logs.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (error) {
+            console.error('Failed to export CSV:', error);
+        }
+    });
+}
+
 // Handle Clear Logs
 const clearLogsBtn = document.getElementById('clear-logs-btn');
 if (clearLogsBtn) {
@@ -95,7 +142,11 @@ function animateValue(obj, end) {
 // Fetch live logs
 async function fetchLogs() {
     try {
-        const endpoint = currentFilter === 'ALL' ? '/logs' : `/logs/${currentFilter}`;
+        let endpoint = currentFilter === 'ALL' ? '/logs' : `/logs/${currentFilter}`;
+        if (currentSearch) {
+            endpoint += (endpoint.includes('?') ? '&' : '?') + `search=${encodeURIComponent(currentSearch)}`;
+        }
+        
         const response = await fetch(`${MONITOR_API}${endpoint}`);
         if (!response.ok) throw new Error('API down');
         const logs = await response.json();

@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
 import logging
+from logging.handlers import RotatingFileHandler
 import time
 import random
 import os
@@ -12,11 +13,13 @@ LOG_DIR = "/app/logs"
 os.makedirs(LOG_DIR, exist_ok=True)
 LOG_FILE = os.path.join(LOG_DIR, "app.log")
 
-logging.basicConfig(
-    filename=LOG_FILE,
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(message)s"
-)
+# Setup Production-Grade Log Rotation (100KB max per file, keep 3 backups)
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.INFO)
+handler = RotatingFileHandler(LOG_FILE, maxBytes=100000, backupCount=3)
+formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+handler.setFormatter(formatter)
+root_logger.addHandler(handler)
 
 @app.route("/success")
 def success():

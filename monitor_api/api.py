@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from collections import Counter
 import os
@@ -33,8 +33,14 @@ def count_levels(lines):
 
 @app.route("/logs")
 def logs():
-    lines = read_logs(limit=50)
-    return jsonify(lines)
+    # Allow filtering by a search query
+    search = request.args.get('search', '', type=str).lower()
+    
+    lines = read_logs(limit=500) # Fetch more lines if we need to filter
+    if search:
+        lines = [line for line in lines if search in line.lower()]
+        
+    return jsonify(lines[-50:])
 
 @app.route("/logs/<level>")
 def logs_by_level(level):
