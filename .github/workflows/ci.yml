@@ -12,22 +12,28 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Build and Start Containers
-      run: docker compose up --build -d
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
 
-    - name: Wait for services to initialize
-      run: sleep 5
+    - name: Test Demo App Natively
+      env:
+        LOG_DIR: ./logs
+        LOG_FILE: ./logs/app.log
+      run: |
+        pip install -r demo_app/requirements.txt
+        cd demo_app
+        pytest test_app.py
 
-    - name: Test Demo App (Inside Docker)
-      run: docker compose exec -T demo_app pytest test_app.py
+    - name: Test Monitor API Natively
+      env:
+        LOG_DIR: ./logs
+        LOG_FILE: ./logs/app.log
+      run: |
+        pip install -r monitor_api/requirements.txt
+        cd monitor_api
+        pytest test_api.py
 
-    - name: Test Monitor API (Inside Docker)
-      run: docker compose exec -T monitor_api pytest test_api.py
-
-    - name: Print Container Logs
-      if: failure()
-      run: docker compose logs
-
-    - name: Cleanup Containers
-      if: always()
-      run: docker compose down
+    - name: Verify Docker Containers Build
+      run: docker compose build

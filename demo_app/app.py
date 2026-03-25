@@ -9,9 +9,9 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-LOG_DIR = "/app/logs"
+LOG_DIR = os.environ.get("LOG_DIR", "/app/logs")
 os.makedirs(LOG_DIR, exist_ok=True)
-LOG_FILE = os.path.join(LOG_DIR, "app.log")
+LOG_FILE = os.environ.get("LOG_FILE", os.path.join(LOG_DIR, "app.log"))
 
 # Setup Production-Grade Log Rotation (100KB max per file, keep 3 backups)
 root_logger = logging.getLogger()
