@@ -5,6 +5,7 @@ from logging.handlers import RotatingFileHandler
 import time
 import random
 import os
+import psutil
 
 app = Flask(__name__)
 CORS(app)
@@ -84,6 +85,13 @@ def crash():
     except Exception as e:
         logging.critical(f"Application crash simulated: {str(e)}")
         return "Crash simulated", 500
+
+@app.route("/metrics")
+def metrics():
+    return {
+        "cpu": psutil.cpu_percent(interval=0.1),
+        "ram": psutil.virtual_memory().percent
+    }
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

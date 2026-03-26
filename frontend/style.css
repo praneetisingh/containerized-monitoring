@@ -199,6 +199,41 @@ body {
 
 @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
+/* Hardware Metrics */
+.hardware-metrics {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1.5rem;
+}
+.hw-item {
+    width: 160px;
+}
+.hw-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+}
+#hw-cpu-text, #hw-ram-text {
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+}
+.hw-bar-bg {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 3px;
+    overflow: hidden;
+}
+.hw-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.5s ease;
+}
+
 /* Metrics Grid */
 .metrics-grid {
     display: grid;

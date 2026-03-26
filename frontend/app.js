@@ -10,6 +10,10 @@ const uiElements = {
     countCritical: document.getElementById('count-critical'),
     logTerminal: document.getElementById('log-terminal'),
     filterBtns: document.querySelectorAll('.pill-btn'),
+    hwCpuText: document.getElementById('hw-cpu-text'),
+    hwCpuBar: document.getElementById('hw-cpu-bar'),
+    hwRamText: document.getElementById('hw-ram-text'),
+    hwRamBar: document.getElementById('hw-ram-bar')
 };
 
 let currentFilter = 'ALL';
@@ -111,6 +115,32 @@ async function fetchSummary() {
         setApiStatus(true);
     } catch (error) {
         setApiStatus(false);
+    }
+}
+
+// Fetch Hardware Metrics
+async function fetchHardware() {
+    try {
+        const response = await fetch(`${DEMO_APP}/metrics`);
+        if (response.ok) {
+            const data = await response.json();
+            
+            if (uiElements.hwCpuText) {
+                uiElements.hwCpuText.textContent = `${data.cpu.toFixed(1)}%`;
+                uiElements.hwCpuBar.style.width = `${data.cpu}%`;
+                if (data.cpu > 80) uiElements.hwCpuBar.style.background = 'var(--color-critical)';
+                else if (data.cpu > 50) uiElements.hwCpuBar.style.background = 'var(--color-warning)';
+                else uiElements.hwCpuBar.style.background = 'var(--color-brand)';
+
+                uiElements.hwRamText.textContent = `${data.ram.toFixed(1)}%`;
+                uiElements.hwRamBar.style.width = `${data.ram}%`;
+                if (data.ram > 85) uiElements.hwRamBar.style.background = 'var(--color-critical)';
+                else if (data.ram > 60) uiElements.hwRamBar.style.background = 'var(--color-warning)';
+                else uiElements.hwRamBar.style.background = 'var(--color-info)';
+            }
+        }
+    } catch (e) {
+        console.error("Failed to fetch hardware metrics");
     }
 }
 
@@ -227,11 +257,13 @@ function setApiStatus(isOnline) {
 function launchTelemetry() {
     fetchSummary();
     fetchLogs();
+    fetchHardware();
     
     // Poll every 1.5s
     setInterval(() => {
         fetchSummary();
         fetchLogs();
+        fetchHardware();
     }, 1500);
 }
 
