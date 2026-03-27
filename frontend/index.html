@@ -11,7 +11,28 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="app-container">
+    <!-- Login Overlay -->
+    <div id="login-overlay" class="login-overlay">
+        <div class="login-card">
+            <div class="brand" style="justify-content: center; margin-bottom: 2rem;">
+                <div class="brand-icon">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </div>
+                <h2>Nexus</h2>
+            </div>
+            <h3 style="text-align: center; margin-bottom: 2rem; color: var(--text-secondary); font-weight: 500;">Secure Telemetry Access</h3>
+            <div class="input-group">
+                <input type="password" id="auth-password" placeholder="Enter Access Key (admin123)" />
+            </div>
+            <button id="auth-btn" class="pill-btn" style="width: 100%; justify-content: center; background: var(--color-brand); color: white; border: none; padding: 0.75rem; font-size: 1rem; margin-top: 1rem;">Authenticate</button>
+            <div id="auth-error" style="color: var(--color-critical); text-align: center; margin-top: 1rem; font-size: 0.8rem; display: none;">Invalid access key. Terminal locked.</div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div class="app-container" id="app-container" style="display: none;">
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="brand">

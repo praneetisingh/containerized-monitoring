@@ -268,4 +268,35 @@ function launchTelemetry() {
 }
 
 // Init when DOM is ready
-document.addEventListener('DOMContentLoaded', launchTelemetry);
+document.addEventListener('DOMContentLoaded', () => {
+    const loginOverlay = document.getElementById('login-overlay');
+    const appContainer = document.getElementById('app-container');
+    const authBtn = document.getElementById('auth-btn');
+    const authInput = document.getElementById('auth-password');
+    const authError = document.getElementById('auth-error');
+
+    function attemptLogin() {
+        if (authInput.value === 'admin123') {
+            loginOverlay.style.opacity = '0';
+            setTimeout(() => {
+                loginOverlay.style.display = 'none';
+                appContainer.style.display = 'flex';
+                launchTelemetry();
+            }, 500);
+        } else {
+            authError.style.display = 'block';
+            authInput.value = '';
+            authInput.focus();
+        }
+    }
+
+    if (authBtn) {
+        authBtn.addEventListener('click', attemptLogin);
+        authInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') attemptLogin();
+        });
+        authInput.focus();
+    } else {
+        launchTelemetry();
+    }
+});
