@@ -49,3 +49,4 @@ To safely stop the software and remove the containers, run:
 ```bash
 docker-compose down
 ```
+ 
