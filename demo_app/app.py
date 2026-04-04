@@ -10,7 +10,8 @@ import psutil
 app = Flask(__name__)
 CORS(app)
 
-LOG_DIR = os.environ.get("LOG_DIR", "/app/logs")
+# Use a local 'logs' folder if we aren't in the Docker '/app' directory
+LOG_DIR = os.environ.get("LOG_DIR", "logs") 
 os.makedirs(LOG_DIR, exist_ok=True)
 LOG_FILE = os.environ.get("LOG_FILE", os.path.join(LOG_DIR, "app.log"))
 
