@@ -1,6 +1,5 @@
 import pytest
 from app import app
-
 @pytest.fixture
 def client():
     app.config['TESTING'] = True
@@ -32,3 +31,11 @@ def test_load_counter(client):
     rv2 = client.get('/load')
     assert rv2.status_code == 200
     assert rv1.data != rv2.data # Check counter has incremented
+
+def test_uptime_endpoint(client):
+    """Test that the uptime endpoint returns a non-negative integer"""
+    rv = client.get('/uptime')
+    assert rv.status_code == 200
+    data = rv.get_json()
+    assert "uptime_seconds" in data
+    assert data["uptime_seconds"] >= 0
