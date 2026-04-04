@@ -1,5 +1,5 @@
 # Containerized Monitoring Project
-
+![CI Status](https://github.com/praneetisingh/containerized-monitoring/actions/workflows/main.yml/badge.svg)
 This is a college project demonstrating a containerized multi-service architecture using Docker and Docker Compose.
 
 ## Architecture
