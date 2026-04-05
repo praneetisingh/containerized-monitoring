@@ -49,4 +49,20 @@ To safely stop the software and remove the containers, run:
 ```bash
 docker-compose down
 ```
+## 📊 Data Visualization (Tableau Dashboard)
+
+This project also includes a Tableau dashboard for analyzing Flask application logs.
+
+### 🔍 Dashboard Features
+- Log Level Distribution (INFO, WARNING, ERROR, CRITICAL)
+- Time-based Log Trend Analysis
+- Visual representation of system behavior from logs
+
+### 📁 Files Included
+- `tableau/monitoring_dashboard.twb` → Tableau dashboard file
+- `tableau/dashboard.png` → Dashboard preview image
+
+### 📸 Dashboard Preview
+
+![Dashboard Preview](tableau/dashboard.png)
  
