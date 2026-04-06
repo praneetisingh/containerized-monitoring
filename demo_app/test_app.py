@@ -39,3 +39,16 @@ def test_uptime_endpoint(client):
     data = rv.get_json()
     assert "uptime_seconds" in data
     assert data["uptime_seconds"] >= 0
+
+def test_stress_load(client):
+    """Simulate 50 rapid requests to ensure the counter is thread-safe and reliable"""
+    for _ in range(50):
+        rv = client.get('/load')
+        assert rv.status_code == 200
+
+    # Verify the counter reached at least 50
+    rv = client.get('/load')
+    data = rv.get_data(as_text=True)
+    # Extract number from "Request number X"
+    count = int(data.split()[-1])
+    assert count >= 50    
