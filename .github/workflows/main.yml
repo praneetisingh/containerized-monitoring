@@ -34,3 +34,9 @@ jobs:
       run: |
         # stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics    
+    
+    - name: Security Scan (Safety)
+      run: |
+        pip install safety
+        # This checks if your requirements.txt has known security holes
+        safety check -r demo_app/requirements.txt
