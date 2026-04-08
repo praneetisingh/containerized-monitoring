@@ -136,5 +136,16 @@ def clear_logs():
 def home():
     return "Monitoring API Running ✅"
 
+@app.route("/api/health-check")
+def health_check():
+    """
+    Simple health check endpoint
+    """
+    return jsonify({
+        "status": "API is running",
+        "service": "monitor_api"
+    })
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000)
+
