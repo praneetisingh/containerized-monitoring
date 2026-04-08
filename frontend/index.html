@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus | System Telemetry</title>
+    <!-- Premium Font: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Login Overlay -->
+    <div id="login-overlay" class="login-overlay">
+        <div class="login-card">
+            <div class="brand" style="justify-content: center; margin-bottom: 2rem;">
+                <div class="brand-icon">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </div>
+                <h2>Nexus</h2>
+            </div>
+            <h3 style="text-align: center; margin-bottom: 2rem; color: var(--text-secondary); font-weight: 500;">Secure Telemetry Access</h3>
+            <div class="input-group">
+                <input type="password" id="auth-password" placeholder="Enter Access Key (admin123)" />
+            </div>
+            <button id="auth-btn" class="pill-btn" style="width: 100%; justify-content: center; background: var(--color-brand); color: white; border: none; padding: 0.75rem; font-size: 1rem; margin-top: 1rem;">Authenticate</button>
+            <div id="auth-error" style="color: var(--color-critical); text-align: center; margin-top: 1rem; font-size: 0.8rem; display: none;">Invalid access key. Terminal locked.</div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div class="app-container" id="app-container" style="display: none;">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </div>
+                <h2>Nexus</h2>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                    Dashboard
+                </a>
+                <a href="#" class="nav-item">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    Log Stream
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="connection-status" id="api-status">
+                    <div class="status-indicator"></div>
+                    <span>Initializing...</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Layout -->
+        <main class="main-content">
+            <header class="top-header">
+                <div>
+                    <h1 class="page-title">System Overview</h1>
+                    <p class="page-subtitle">Real-time telemetry and container tracking</p>
+                    
+                    <div class="hardware-metrics">
+                        <div class="hw-item">
+                            <span class="hw-label">CPU USAGE <span id="hw-cpu-text">0%</span></span>
+                            <div class="hw-bar-bg"><div class="hw-bar-fill" id="hw-cpu-bar" style="width: 0%; background: var(--color-brand);"></div></div>
+                        </div>
+                        <div class="hw-item">
+                            <span class="hw-label">RAM USAGE <span id="hw-ram-text">0%</span></span>
+                            <div class="hw-bar-bg"><div class="hw-bar-fill" id="hw-ram-bar" style="width: 0%; background: var(--color-info);"></div></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <div class="live-badge">
+                        <span class="live-dot"></span> LIVE
+                    </div>
+                </div>
+            </header>
+
+            <!-- Metrics Grid -->
+            <section class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span class="metric-label">Information</span>
+                        <div class="icon-wrapper bg-blue">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                    </div>
+                    <div class="metric-value text-blue" id="count-info">0</div>
+                    <div class="metric-trend p-blue">Processed properly</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span class="metric-label">Warnings</span>
+                        <div class="icon-wrapper bg-amber">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                        </div>
+                    </div>
+                    <div class="metric-value text-amber" id="count-warning">0</div>
+                    <div class="metric-trend p-amber">Requires attention</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span class="metric-label">Errors</span>
+                        <div class="icon-wrapper bg-rose">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                    </div>
+                    <div class="metric-value text-rose" id="count-error">0</div>
+                    <div class="metric-trend p-rose">System failures</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span class="metric-label">Critical</span>
+                        <div class="icon-wrapper bg-red">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                    </div>
+                    <div class="metric-value text-red" id="count-critical">0</div>
+                    <div class="metric-trend p-red">Immediate action required</div>
+                </div>
+            </section>
+
+            <!-- Lower Layout: Controls & Logs -->
+            <div class="content-split">
+                <!-- Demo App Operations -->
+                <section class="panel operations-panel">
+                    <div class="panel-header">
+                        <h2>Traffic Generator</h2>
+                        <p>Simulate container loads and errors</p>
+                    </div>
+                    
+                    <div class="button-grid">
+                        <button class="action-btn style-success" onclick="triggerEndpoint('/success')">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                            Standard Request
+                        </button>
+                        
+                        <button class="action-btn style-warning" onclick="triggerEndpoint('/slow')">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            Latency Spike
+                        </button>
+                        
+                        <button class="action-btn style-error" onclick="triggerEndpoint('/error')">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                            Runtime Error
+                        </button>
+
+                        <button class="action-btn style-neutral" onclick="triggerEndpoint('/random')">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
+                            Random Event
+                        </button>
+                    </div>
+
+                    <div class="panel-divider"></div>
+                    
+                    <div class="advanced-ops">
+                        <button class="outline-btn" onclick="triggerEndpoint('/load')">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" /></svg>
+                            Inject High Load
+                        </button>
+                        <button class="outline-btn danger" onclick="triggerEndpoint('/crash')">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            Force Container Crash
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Console Output -->
+                <section class="panel console-panel">
+                    <div class="console-header">
+                        <div class="console-title">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                            <span>/app/logs/app.log</span>
+                        </div>
+                        <div class="console-filters">
+                            <input type="text" id="log-search" placeholder="Search logs..." style="background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--border-accent); border-radius: 6px; padding: 0.3rem 0.6rem; font-size: 0.75rem; margin-right: 0.5rem;" />
+                            <button class="pill-btn" id="export-csv-btn" style="border: 1px solid rgba(16, 185, 129, 0.4); color: var(--color-success);">Export CSV</button>
+                            <button class="pill-btn danger-hover" id="clear-logs-btn" style="border: 1px dashed rgba(239, 68, 68, 0.4); color: #ef4444;">Clear Logs</button>
+                            <button class="pill-btn active" data-level="ALL">All Events</button>
+                            <button class="pill-btn" data-level="ERROR">Errors Only</button>
+                        </div>
+                    </div>
+                    <div class="console-window" id="log-terminal">
+                        <!-- Logs inject here -->
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

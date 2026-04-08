@@ -1,20 +1,27 @@
 from flask import Flask
+from flask_cors import CORS
 import logging
+from logging.handlers import RotatingFileHandler
 import time
 import random
 import os
+import psutil
 
 app = Flask(__name__)
+CORS(app)
 
-LOG_DIR = "/app/logs"
+# Use a local 'logs' folder if we aren't in the Docker '/app' directory
+LOG_DIR = os.environ.get("LOG_DIR", "logs") 
 os.makedirs(LOG_DIR, exist_ok=True)
-LOG_FILE = os.path.join(LOG_DIR, "app.log")
+LOG_FILE = os.environ.get("LOG_FILE", os.path.join(LOG_DIR, "app.log"))
 
-logging.basicConfig(
-    filename=LOG_FILE,
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(message)s"
-)
+# Setup Production-Grade Log Rotation (100KB max per file, keep 3 backups)
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.INFO)
+handler = RotatingFileHandler(LOG_FILE, maxBytes=100000, backupCount=3)
+formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+handler.setFormatter(formatter)
+root_logger.addHandler(handler)
 
 @app.route("/success")
 def success():
@@ -79,6 +86,13 @@ def crash():
     except Exception as e:
         logging.critical(f"Application crash simulated: {str(e)}")
         return "Crash simulated", 500
+
+@app.route("/metrics")
+def metrics():
+    return {
+        "cpu": psutil.cpu_percent(interval=0.1),
+        "ram": psutil.virtual_memory().percent
+    }
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

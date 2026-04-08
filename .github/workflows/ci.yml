@@ -1,0 +1,39 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
+    - name: Test Demo App Natively
+      env:
+        LOG_DIR: ./logs
+        LOG_FILE: ./logs/app.log
+      run: |
+        pip install -r demo_app/requirements.txt
+        cd demo_app
+        pytest test_app.py
+
+    - name: Test Monitor API Natively
+      env:
+        LOG_DIR: ./logs
+        LOG_FILE: ./logs/app.log
+      run: |
+        pip install -r monitor_api/requirements.txt
+        cd monitor_api
+        pytest test_api.py
+
+    - name: Verify Docker Containers Build
+      run: docker compose build
