@@ -6,13 +6,6 @@ import os
 import re
 from datetime import datetime
 
-@app.route("/api/version")
-def api_version():
-    return jsonify({
-        "service": "monitor_api",
-        "version": "1.0.0",
-        "timestamp": datetime.utcnow().isoformat()
-    })
 
 app = Flask(__name__)
 CORS(app)
@@ -23,6 +16,15 @@ Swagger(app, template={
         "version": "1.0.0"
     }
 })
+
+@app.route("/api/version")
+def api_version():
+    return jsonify({
+        "service": "monitor_api",
+        "version": "1.0.0",
+        "timestamp": datetime.utcnow().isoformat()
+    })
+
 
 # Path to the log file created by demo_app (mounted via Docker volume)
 LOG_FILE = os.environ.get("LOG_FILE", "/app/logs/app.log")
