@@ -34,3 +34,10 @@ jobs:
       run: |
         # stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics    
+    
+    - name: Security Scan (Safety)
+      run: |
+        pip install safety
+        # We use '--continue-on-error' or '|| true' so the build passes 
+        # even if it finds a vulnerability, allowing us to see the report.
+        safety check -r demo_app/requirements.txt || echo "Vulnerabilities found, please check logs."
