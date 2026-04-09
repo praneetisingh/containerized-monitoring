@@ -7,6 +7,8 @@ import random
 import os
 import psutil
 import requests
+import threading
+from tenacity import retry, wait_exponential, stop_after_attempt
 
 app = Flask(__name__)
 CORS(app)
@@ -20,10 +22,13 @@ MONITOR_API_URL = os.environ.get("MONITOR_API_URL", "http://monitor_api:8000")
 class NetworkLogHandler(logging.Handler):
     def emit(self, record):
         log_entry = self.format(record)
-        try:
-            requests.post(f"{MONITOR_API_URL}/logs/ingest", json={"log": log_entry}, timeout=1)
-        except Exception:
-            pass
+        # Fire-and-forget thread so Retries don't hang the container
+        threading.Thread(target=self.send_log, args=(log_entry,), daemon=True).start()
+
+    @retry(wait=wait_exponential(multiplier=1, min=2, max=10), stop=stop_after_attempt(5))
+    def send_log(self, log_entry):
+        response = requests.post(f"{MONITOR_API_URL}/logs/ingest", json={"log": log_entry}, timeout=2)
+        response.raise_for_status()
 
 # Setup Production-Grade Log Rotation (100KB max per file, keep 3 backups)
 root_logger = logging.getLogger()
@@ -109,4 +114,4 @@ def metrics():
     }
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5001)

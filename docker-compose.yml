@@ -1,15 +1,28 @@
 version: '3.8'
 
 services:
-  demo_app:
+  user_service:
     build:
-      context: ./demo_app
+      context: ./user_service
     ports:
-      - "5000:5000"
+      - "5001:5001"
     volumes:
       - shared-logs:/app/logs
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5001/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  order_service:
+    build:
+      context: ./order_service
+    ports:
+      - "5002:5002"
+    volumes:
+      - shared-logs:/app/logs
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5002/health')"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -18,7 +31,7 @@ services:
     build:
       context: ./monitor_api
     ports:
-      - "8000:8000"
+      - "8001:8000"
     volumes:
       - shared-logs:/app/logs
     healthcheck:
@@ -33,8 +46,9 @@ services:
     ports:
       - "3000:80"
     environment:
-      - MONITOR_API_URL=http://localhost:8000
-      - DEMO_APP_URL=http://localhost:5000
+      - MONITOR_API_URL=http://localhost:8001
+      - USER_SERVICE_URL=http://localhost:5001
+      - ORDER_SERVICE_URL=http://localhost:5002
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:80"]
       interval: 30s

@@ -1,5 +1,11 @@
-const MONITOR_API = '__MONITOR_API_URL__' !== '__MONITOR_API_URL__' ? '__MONITOR_API_URL__' : 'http://localhost:8000';
-const DEMO_APP = '__DEMO_APP_URL__' !== '__DEMO_APP_URL__' ? '__DEMO_APP_URL__' : 'http://localhost:5000';
+const injectedMonitor = '__MONITOR_API_URL__';
+const MONITOR_API = injectedMonitor.startsWith('__') ? 'http://localhost:8001' : injectedMonitor;
+
+const injectedUser = '__USER_SERVICE_URL__';
+const USER_SERVICE = injectedUser.startsWith('__') ? 'http://localhost:5001' : injectedUser;
+
+const injectedOrder = '__ORDER_SERVICE_URL__';
+const ORDER_SERVICE = injectedOrder.startsWith('__') ? 'http://localhost:5002' : injectedOrder;
 
 const uiElements = {
     apiStatus: document.getElementById('api-status'),
@@ -209,7 +215,7 @@ async function fetchSummary() {
 // Fetch Hardware Metrics
 async function fetchHardware() {
     try {
-        const response = await fetch(`${DEMO_APP}/metrics`);
+        const response = await fetch(`${USER_SERVICE}/metrics`);
         if (response.ok) {
             const data = await response.json();
             
@@ -318,7 +324,8 @@ function renderLogs(logs) {
 // Trigger Demo App actions 
 async function triggerEndpoint(path) {
     try {
-        fetch(`${DEMO_APP}${path}`).catch(e => console.error(e));
+        const targetService = Math.random() > 0.5 ? USER_SERVICE : ORDER_SERVICE;
+        fetch(`${targetService}${path}`).catch(e => console.error(e));
         
         // Fast-refresh UI to make it feel extremely responsive
         setTimeout(fetchSummary, 200);
