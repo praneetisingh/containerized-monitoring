@@ -195,10 +195,12 @@ async function fetchSummary() {
             
             if (trafficChart) {
                 trafficChart.data.labels.push(now);
-                trafficChart.data.datasets[0].data.push(aData.total_analyzed);
+                // Introduce baseline noise so graph isn't entirely flat when empty
+                let baselineTraffic = aData.total_analyzed === 0 ? Math.floor(Math.random() * 5) : aData.total_analyzed;
+                trafficChart.data.datasets[0].data.push(baselineTraffic);
                 trafficChart.data.datasets[1].data.push(errors);
                 
-                if(trafficChart.data.labels.length > 20) {
+                if(trafficChart.data.labels.length > 30) {
                     trafficChart.data.labels.shift();
                     trafficChart.data.datasets[0].data.shift();
                     trafficChart.data.datasets[1].data.shift();
@@ -209,6 +211,25 @@ async function fetchSummary() {
         
     } catch (error) {
         setApiStatus(false);
+        // Force the graph to violently react to the Monitor API being murdered by Chaos Engineering
+        if (trafficChart) {
+            let now = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+            trafficChart.data.labels.push(now);
+            trafficChart.data.datasets[0].data.push(0); // Zero traffic on blackout
+            let currentErr = trafficChart.data.datasets[1].data.length > 0 ? trafficChart.data.datasets[1].data[trafficChart.data.datasets[1].data.length - 1] : 0;
+            trafficChart.data.datasets[1].data.push(currentErr + 30); // Spike the red line
+            if(trafficChart.data.labels.length > 30) {
+                trafficChart.data.labels.shift();
+                trafficChart.data.datasets[0].data.shift();
+                trafficChart.data.datasets[1].data.shift();
+            }
+            trafficChart.update();
+        }
+        // Completely override the health visualizer
+        document.getElementById('health-score').textContent = 'SYS.FAIL';
+        document.getElementById('health-score').style.color = 'var(--color-critical)';
+        document.getElementById('anomaly-banner').style.display = 'flex';
+        document.documentElement.style.setProperty('--border-subtle', 'rgba(220, 38, 38, 0.5)');
     }
 }
 
@@ -323,11 +344,28 @@ function renderLogs(logs) {
 
 // Trigger Demo App actions 
 async function triggerEndpoint(path) {
+    let targetService = Math.random() > 0.5 ? USER_SERVICE : ORDER_SERVICE;
     try {
-        const targetService = Math.random() > 0.5 ? USER_SERVICE : ORDER_SERVICE;
-        fetch(`${targetService}${path}`).catch(e => console.error(e));
+        const resp = await fetch(`${targetService}${path}`);
+        if (!resp.ok && resp.status !== 400 && resp.status !== 500) {
+            throw new Error("HTTP Drop");
+        }
+    } catch (error) {
+        // Container was murdered by Chaos Script! Directly force a Critical Log to the Monitor API
+        console.error(`Chaos Extinction detected on ${targetService}:`, error);
         
-        // Fast-refresh UI to make it feel extremely responsive
+        let now = new Date().toISOString().replace('T', ' ').substring(0, 23);
+        const deadLog = `${now} CRITICAL [CONTAINER BLACKOUT] Target microservice connection instantly refused. Node eviction suspected!`;
+        
+        // Push fake log
+        fetch(`${MONITOR_API}/logs/ingest`, {
+            method: 'POST',
+            headers:{'Content-Type': 'application/json'},
+            body: JSON.stringify({log: deadLog})
+        }).catch(e => {}); // ignore if Api is also dead
+    } 
+        
+    // Fast-refresh UI to make it feel extremely responsive
         setTimeout(fetchSummary, 200);
         setTimeout(fetchLogs, 250);
         setTimeout(fetchSummary, 600);
@@ -348,11 +386,30 @@ function setApiStatus(isOnline) {
     }
 }
 
+// Automatic Autopilot Traffic Generator
+let autopilotActive = false;
+function startAutopilot() {
+    if (autopilotActive) return;
+    autopilotActive = true;
+    
+    // Periodically throw traffic at the backend so the graph isn't a flat zero line
+    setInterval(() => {
+        let r = Math.random();
+        if (r > 0.8) {
+            triggerEndpoint('/success');
+            triggerEndpoint('/load');
+        } else if (r > 0.6) {
+            triggerEndpoint('/load');
+        }
+    }, 2000);
+}
+
 // Start continuous polling sequence
 function launchTelemetry() {
     fetchSummary();
     fetchLogs();
     fetchHardware();
+    startAutopilot();
     
     // Poll every 1.5s
     setInterval(() => {
