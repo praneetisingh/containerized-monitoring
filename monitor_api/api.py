@@ -4,6 +4,15 @@ from flasgger import Swagger
 from collections import Counter
 import os
 import re
+from datetime import datetime
+
+@app.route("/api/version")
+def api_version():
+    return jsonify({
+        "service": "monitor_api",
+        "version": "1.0.0",
+        "timestamp": datetime.now().isoformat()
+    })
 
 app = Flask(__name__)
 CORS(app)
