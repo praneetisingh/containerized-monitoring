@@ -370,9 +370,7 @@ async function triggerEndpoint(path) {
         setTimeout(fetchLogs, 250);
         setTimeout(fetchSummary, 600);
         setTimeout(fetchLogs, 650);
-    } catch (error) {
-        console.error(`Failed to trigger ${path}:`, error);
-    }
+
 }
 
 // Status UI Handler
