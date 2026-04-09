@@ -11,7 +11,7 @@ def api_version():
     return jsonify({
         "service": "monitor_api",
         "version": "1.0.0",
-        "timestamp": datetime.now().isoformat()
+        "timestamp": datetime.utcnow().isoformat()
     })
 
 app = Flask(__name__)
