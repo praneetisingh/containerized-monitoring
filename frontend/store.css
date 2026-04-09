@@ -1,0 +1,156 @@
+:root {
+    --brand: #a855f7;
+    --brand-glow: rgba(168, 85, 247, 0.4);
+    --bg-dark: #0f172a;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Outfit', sans-serif;
+}
+
+body {
+    background: radial-gradient(circle at top right, #1e1b4b, var(--bg-dark));
+    color: var(--text-main);
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+.error-banner {
+    background: #ef4444;
+    color: white;
+    text-align: center;
+    padding: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    display: none;
+    animation: flash 1s infinite alternate;
+}
+
+@keyframes flash {
+    0% { background: #ef4444; }
+    100% { background: #b91c1c; }
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 5%;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.logo {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: 4px;
+    background: linear-gradient(90deg, #fff, var(--brand));
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+.nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    margin: 0 1.5rem;
+    transition: 0.3s;
+    font-weight: 400;
+}
+
+.nav-links a:hover {
+    color: white;
+}
+
+.dev-link {
+    color: #4ade80 !important;
+    border-bottom: 1px dashed #4ade80;
+}
+
+.outline-btn {
+    background: transparent;
+    border: 1px solid var(--text-muted);
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.outline-btn:hover {
+    border-color: white;
+    background: rgba(255,255,255,0.1);
+}
+
+.hero {
+    height: calc(100vh - 100px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: url('https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80') no-repeat center center/cover;
+}
+
+.glass-card {
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(20px);
+    padding: 4rem;
+    border-radius: 24px;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    max-width: 600px;
+    text-align: center;
+}
+
+.glass-card h1 {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    font-weight: 800;
+}
+
+.glass-card p {
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.price {
+    font-size: 2.5rem;
+    font-weight: 300;
+    margin-bottom: 2rem;
+    color: var(--brand);
+}
+
+.primary-btn {
+    background: var(--brand);
+    color: white;
+    border: none;
+    padding: 1rem 3rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 10px 20px var(--brand-glow);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.primary-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px var(--brand-glow);
+    background: #c084fc;
+}
+
+.primary-btn:active {
+    transform: translateY(0);
+}
+
+.status-msg {
+    margin-top: 1rem;
+    height: 20px;
+    font-weight: 600;
+    color: #4ade80;
+}
