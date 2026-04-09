@@ -22,7 +22,7 @@ def api_version():
     return jsonify({
         "service": "monitor_api",
         "version": "1.0.0",
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": str(datetime.utcnow())
     })
 
 
@@ -157,12 +157,6 @@ def health_check():
         "service": "monitor_api"
     })
 
-@app.route("/api/version")
-def api_version():
-    return jsonify({
-        "service": "monitor_api",
-        "version": "1.0.0"
-    })
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000)
