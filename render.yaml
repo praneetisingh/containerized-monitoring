@@ -1,0 +1,42 @@
+services:
+  - type: web
+    name: monitor-api
+    env: docker
+    dockerContext: ./monitor_api
+    dockerfilePath: ./monitor_api/Dockerfile
+    envVars:
+      - key: PORT
+        value: 8000
+
+  - type: web
+    name: demo-app
+    env: docker
+    dockerContext: ./demo_app
+    dockerfilePath: ./demo_app/Dockerfile
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: MONITOR_API_URL
+        fromService:
+          type: web
+          name: monitor-api
+          envVarKey: RENDER_EXTERNAL_URL
+
+  - type: web
+    name: dashboard-frontend
+    env: docker
+    dockerContext: ./frontend
+    dockerfilePath: ./frontend/Dockerfile
+    envVars:
+      - key: PORT
+        value: 80
+      - key: MONITOR_API_URL
+        fromService:
+          type: web
+          name: monitor-api
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: DEMO_APP_URL
+        fromService:
+          type: web
+          name: demo-app
+          envVarKey: RENDER_EXTERNAL_URL

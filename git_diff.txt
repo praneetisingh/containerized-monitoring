@@ -1,0 +1,16 @@
+﻿commit 60b67dddcb05457db5458d7852e887d2e1b62ebd
+Author: praneetisingh <praneetisingh28@gmail.com>
+Date:   Wed Apr 1 22:07:01 2026 +0530
+
+    Update documentation and finalize for college presentation
+
+diff --git a/README.md b/README.md
+index 8fe04c4..12c3d0a 100644
+--- a/README.md
++++ b/README.md
+@@ -49,3 +49,4 @@ To safely stop the software and remove the containers, run:
+ ```bash
+ docker-compose down
+ ```
++ 
+\ No newline at end of file

@@ -32,6 +32,9 @@ services:
       context: ./frontend
     ports:
       - "3000:80"
+    environment:
+      - MONITOR_API_URL=http://localhost:8000
+      - DEMO_APP_URL=http://localhost:5000
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:80"]
       interval: 30s

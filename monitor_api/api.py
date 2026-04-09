@@ -29,6 +29,8 @@ def api_version():
 # Path to the log file created by demo_app (mounted via Docker volume)
 LOG_FILE = os.environ.get("LOG_FILE", "/app/logs/app.log")
 
+in_memory_logs = []
+
 
 # --- HELPER FUNCTIONS ---
 
@@ -46,6 +48,9 @@ def parse_log_line(line):
     return None
 
 def read_logs(limit=50):
+    if len(in_memory_logs) > 0:
+        return in_memory_logs[-limit:]
+    # Fallback to file mapping for backwards compatibility
     if not os.path.exists(LOG_FILE):
         return []
     with open(LOG_FILE, "r", encoding="utf-8") as f:
@@ -95,6 +100,15 @@ def get_analytics():
         "error_rate": f"{(error_count/total)*100:.1f}%" if total > 0 else "0%"
     })
 
+@app.route("/logs/ingest", methods=["POST"])
+def ingest_log():
+    data = request.json
+    if data and "log" in data:
+        in_memory_logs.append(data["log"])
+        if len(in_memory_logs) > 1000:
+            in_memory_logs.pop(0)
+    return jsonify({"status": "ok"}), 201
+
 @app.route("/logs")
 def logs():
     search = request.args.get('search', '', type=str).lower()
@@ -138,7 +152,8 @@ def summary():
 
 @app.route("/logs", methods=["DELETE"])
 def clear_logs():
-
+    global in_memory_logs
+    in_memory_logs = []
     if os.path.exists(LOG_FILE):
         open(LOG_FILE, "w").close()
     return jsonify({"status": "cleared"}), 200

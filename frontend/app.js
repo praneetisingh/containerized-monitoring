@@ -1,5 +1,5 @@
-const MONITOR_API = 'http://localhost:8000';
-const DEMO_APP = 'http://localhost:5000';
+const MONITOR_API = '__MONITOR_API_URL__' !== '__MONITOR_API_URL__' ? '__MONITOR_API_URL__' : 'http://localhost:8000';
+const DEMO_APP = '__DEMO_APP_URL__' !== '__DEMO_APP_URL__' ? '__DEMO_APP_URL__' : 'http://localhost:5000';
 
 const uiElements = {
     apiStatus: document.getElementById('api-status'),

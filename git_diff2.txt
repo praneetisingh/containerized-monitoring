@@ -1,0 +1,136 @@
+﻿commit cd7f0f29500f30cca97bf85ac49c5ce3b2e1c8b5
+Author: praneetisingh <praneetisingh28@gmail.com>
+Date:   Fri Mar 27 19:54:27 2026 +0530
+
+    feat: Implement Secure Authentication Login Gateway for Nexus Dashboard
+
+diff --git a/frontend/app.js b/frontend/app.js
+index 4156fb6..2511ac7 100644
+--- a/frontend/app.js
++++ b/frontend/app.js
+@@ -268,4 +268,35 @@ function launchTelemetry() {
+ }
+ 
+ // Init when DOM is ready
+-document.addEventListener('DOMContentLoaded', launchTelemetry);
++document.addEventListener('DOMContentLoaded', () => {
++    const loginOverlay = document.getElementById('login-overlay');
++    const appContainer = document.getElementById('app-container');
++    const authBtn = document.getElementById('auth-btn');
++    const authInput = document.getElementById('auth-password');
++    const authError = document.getElementById('auth-error');
++
++    function attemptLogin() {
++        if (authInput.value === 'admin123') {
++            loginOverlay.style.opacity = '0';
++            setTimeout(() => {
++                loginOverlay.style.display = 'none';
++                appContainer.style.display = 'flex';
++                launchTelemetry();
++            }, 500);
++        } else {
++            authError.style.display = 'block';
++            authInput.value = '';
++            authInput.focus();
++        }
++    }
++
++    if (authBtn) {
++        authBtn.addEventListener('click', attemptLogin);
++        authInput.addEventListener('keypress', (e) => {
++            if (e.key === 'Enter') attemptLogin();
++        });
++        authInput.focus();
++    } else {
++        launchTelemetry();
++    }
++});
+diff --git a/frontend/index.html b/frontend/index.html
+index 9ac8229..ea7a089 100644
+--- a/frontend/index.html
++++ b/frontend/index.html
+@@ -11,7 +11,28 @@
+     <link rel="stylesheet" href="style.css">
+ </head>
+ <body>
+-    <div class="app-container">
++    <!-- Login Overlay -->
++    <div id="login-overlay" class="login-overlay">
++        <div class="login-card">
++            <div class="brand" style="justify-content: center; margin-bottom: 2rem;">
++                <div class="brand-icon">
++                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
++                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
++                    </svg>
++                </div>
++                <h2>Nexus</h2>
++            </div>
++            <h3 style="text-align: center; margin-bottom: 2rem; color: var(--text-secondary); font-weight: 500;">Secure Telemetry Access</h3>
++            <div class="input-group">
++                <input type="password" id="auth-password" placeholder="Enter Access Key (admin123)" />
++            </div>
++            <button id="auth-btn" class="pill-btn" style="width: 100%; justify-content: center; background: var(--color-brand); color: white; border: none; padding: 0.75rem; font-size: 1rem; margin-top: 1rem;">Authenticate</button>
++            <div id="auth-error" style="color: var(--color-critical); text-align: center; margin-top: 1rem; font-size: 0.8rem; display: none;">Invalid access key. Terminal locked.</div>
++        </div>
++    </div>
++
++    <!-- Main Dashboard -->
++    <div class="app-container" id="app-container" style="display: none;">
+         <!-- Sidebar Navigation -->
+         <aside class="sidebar">
+             <div class="brand">
+diff --git a/frontend/style.css b/frontend/style.css
+index 1d715ea..ad7e632 100644
+--- a/frontend/style.css
++++ b/frontend/style.css
+@@ -43,7 +43,49 @@ body {
+     overflow-x: hidden;
+ }
+ 
+-/* Layout Architecture */
++/* Authentication Overlay */
++.login-overlay {
++    position: fixed;
++    top: 0; left: 0; right: 0; bottom: 0;
++    background: rgba(10, 10, 15, 0.85);
++    backdrop-filter: blur(12px);
++    -webkit-backdrop-filter: blur(12px);
++    display: flex;
++    align-items: center;
++    justify-content: center;
++    z-index: 9999;
++    transition: opacity 0.5s ease;
++}
++
++.login-card {
++    background: var(--surface-light);
++    border: 1px solid var(--border-light);
++    padding: 3rem;
++    border-radius: 16px;
++    width: 100%;
++    max-width: 400px;
++    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
++}
++
++.input-group input {
++    width: 100%;
++    background: rgba(0, 0, 0, 0.2);
++    border: 1px solid var(--border-accent);
++    color: white;
++    padding: 0.75rem 1rem;
++    border-radius: 8px;
++    font-family: var(--font-mono);
++    font-size: 0.9rem;
++    outline: none;
++    transition: border-color 0.2s;
++    box-sizing: border-box;
++}
++
++.input-group input:focus {
++    border-color: var(--color-brand);
++}
++
++/* Layout & Container */
+ .app-container {
+     display: flex;
+     min-height: 100vh;

@@ -6,6 +6,7 @@ import time
 import random
 import os
 import psutil
+import requests
 
 app = Flask(__name__)
 CORS(app)
@@ -14,6 +15,15 @@ CORS(app)
 LOG_DIR = os.environ.get("LOG_DIR", "logs") 
 os.makedirs(LOG_DIR, exist_ok=True)
 LOG_FILE = os.environ.get("LOG_FILE", os.path.join(LOG_DIR, "app.log"))
+MONITOR_API_URL = os.environ.get("MONITOR_API_URL", "http://monitor_api:8000")
+
+class NetworkLogHandler(logging.Handler):
+    def emit(self, record):
+        log_entry = self.format(record)
+        try:
+            requests.post(f"{MONITOR_API_URL}/logs/ingest", json={"log": log_entry}, timeout=1)
+        except Exception:
+            pass
 
 # Setup Production-Grade Log Rotation (100KB max per file, keep 3 backups)
 root_logger = logging.getLogger()
@@ -22,6 +32,10 @@ handler = RotatingFileHandler(LOG_FILE, maxBytes=100000, backupCount=3)
 formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
 handler.setFormatter(formatter)
 root_logger.addHandler(handler)
+
+network_handler = NetworkLogHandler()
+network_handler.setFormatter(formatter)
+root_logger.addHandler(network_handler)
 
 @app.route("/success")
 def success():
