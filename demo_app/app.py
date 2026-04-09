@@ -37,6 +37,33 @@ network_handler = NetworkLogHandler()
 network_handler.setFormatter(formatter)
 root_logger.addHandler(network_handler)
 
+@app.route("/")
+def home():
+    return """
+    <html>
+        <head>
+            <title>Buggy E-Commerce Store</title>
+            <style>
+                body { font-family: sans-serif; padding: 40px; background: #f0f4f8; }
+                .btn { padding: 10px 20px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; }
+            </style>
+        </head>
+        <body>
+            <h1>Nexus Demo Target (Buggy Website)</h1>
+            <p>Welcome to our totally functional website! Install the Chrome Extension, then click below to trigger a bug.</p>
+            <button class="btn" onclick="triggerBug()">Checkout (Will produce JS Error)</button>
+            <script>
+                function triggerBug() {
+                    console.log("Attempting checkout...");
+                    // This creates an intentional Uncaught TypeError in JavaScript!
+                    const user = null;
+                    console.log(user.creditCardNumber); 
+                }
+            </script>
+        </body>
+    </html>
+    """
+
 @app.route("/success")
 def success():
     logging.info("Success request received")

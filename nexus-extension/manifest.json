@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Nexus Telemetry Sentry",
+  "version": "1.0",
+  "description": "Real-time error tracking and telemetry injection for Nexus Monitoring.",
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>",
+    "http://localhost:8000/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ]
+}
