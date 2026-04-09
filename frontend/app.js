@@ -18,6 +18,49 @@ const uiElements = {
 
 let currentFilter = 'ALL';
 let isAutoScrolling = true;
+let trafficChart;
+
+// Initialize Chart.js
+function initChart() {
+    const ctx = document.getElementById('trafficChart').getContext('2d');
+    trafficChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Log Incidence Rate',
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                borderWidth: 2,
+                pointRadius: 0,
+                tension: 0.4,
+                fill: true,
+                data: []
+            }, {
+                label: 'Critical Anomalies',
+                borderColor: '#ef4444',
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                borderWidth: 2,
+                pointRadius: 0,
+                tension: 0.4,
+                fill: true,
+                borderDash: [5, 5],
+                data: []
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 400, easing: 'linear' },
+            scales: {
+                y: { display: false, min: 0 },
+                x: { display: true, ticks: { maxTicksLimit: 8, color: '#71717a' }, grid: { display: false } }
+            },
+            plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+            interaction: { mode: 'nearest', axis: 'x', intersect: false }
+        }
+    });
+}
 
 // Handle Log Filtering Toggle
 uiElements.filterBtns.forEach(btn => {
@@ -103,9 +146,9 @@ uiElements.logTerminal.addEventListener('scroll', () => {
 // Fetch metrics summary
 async function fetchSummary() {
     try {
-        const response = await fetch(`${MONITOR_API}/summary`);
-        if (!response.ok) throw new Error('API down');
-        const data = await response.json();
+        const sumResp = await fetch(`${MONITOR_API}/summary`);
+        if (!sumResp.ok) throw new Error('API down');
+        const data = await sumResp.json();
         
         animateValue(uiElements.countInfo, data.INFO || 0);
         animateValue(uiElements.countWarning, data.WARNING || 0);
@@ -113,6 +156,51 @@ async function fetchSummary() {
         animateValue(uiElements.countCritical, data.CRITICAL || 0);
 
         setApiStatus(true);
+        
+        // Fetch Advanced Heuristics separately
+        const analyticsResp = await fetch(`${MONITOR_API}/api/analytics`);
+        if (analyticsResp.ok) {
+            const aData = await analyticsResp.json();
+            
+            // Health Score Logic Focus
+            const hsElem = document.getElementById('health-score');
+            hsElem.textContent = aData.health_score;
+            let scoreVal = parseInt(aData.health_score);
+            let anomalyBanner = document.getElementById('anomaly-banner');
+            
+            if (scoreVal < 70) {
+                hsElem.style.color = 'var(--color-critical)';
+                hsElem.style.textShadow = '0 0 20px rgba(220, 38, 38, 0.5)';
+                anomalyBanner.style.display = 'flex';
+                document.documentElement.style.setProperty('--border-subtle', 'rgba(220, 38, 38, 0.3)');
+            } else if (scoreVal < 90) {
+                hsElem.style.color = 'var(--color-warning)';
+                anomalyBanner.style.display = 'none';
+                document.documentElement.style.setProperty('--border-subtle', '#3f3f46');
+            } else {
+                hsElem.style.color = 'var(--color-success)';
+                anomalyBanner.style.display = 'none';
+                document.documentElement.style.setProperty('--border-subtle', '#3f3f46');
+            }
+            
+            // Update the live chart!
+            let now = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+            let errors = (aData.summary.ERROR || 0) + (aData.summary.CRITICAL || 0);
+            
+            if (trafficChart) {
+                trafficChart.data.labels.push(now);
+                trafficChart.data.datasets[0].data.push(aData.total_analyzed);
+                trafficChart.data.datasets[1].data.push(errors);
+                
+                if(trafficChart.data.labels.length > 20) {
+                    trafficChart.data.labels.shift();
+                    trafficChart.data.datasets[0].data.shift();
+                    trafficChart.data.datasets[1].data.shift();
+                }
+                trafficChart.update();
+            }
+        }
+        
     } catch (error) {
         setApiStatus(false);
     }
@@ -281,6 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 loginOverlay.style.display = 'none';
                 appContainer.style.display = 'flex';
+                initChart(); // Initialize chart when DOM is visible
                 launchTelemetry();
             }, 500);
         } else {
@@ -297,6 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         authInput.focus();
     } else {
+        initChart();
         launchTelemetry();
     }
 });
