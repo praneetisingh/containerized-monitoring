@@ -41,6 +41,12 @@ def test_uptime_endpoint(client):
     assert data["uptime_seconds"] >= 0
 
 def test_stress_load(client):
+    """Simulate 20 rapid requests to ensure the counter is stable"""
+    for _ in range(20):
+        rv = client.get('/load')
+        assert rv.status_code == 200
+
+    # Verify the counter reached a high number
     """Simulate 50 rapid requests to ensure the counter is thread-safe and reliable"""
     for _ in range(50):
         rv = client.get('/load')
@@ -51,4 +57,5 @@ def test_stress_load(client):
     data = rv.get_data(as_text=True)
     # Extract number from "Request number X"
     count = int(data.split()[-1])
+    assert count >= 20
     assert count >= 50    
