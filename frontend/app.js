@@ -61,10 +61,13 @@ if (IS_SERVERLESS) {
         
         // Emulate basic routing
         if (url.includes(USER_SERVICE) || url.includes(ORDER_SERVICE)) {
-            // Randomly succeed or fail
+            // Generate simulated telemetry logs
+            let now = new Date().toISOString().replace('T', ' ').substring(0, 23);
             if (Math.random() > 0.8) {
+                mockLogs.push(`${now} ERROR Simulated Chaos event on microservice.`);
                 return new Response("Error", {status: 500});
             }
+            mockLogs.push(`${now} INFO Standard telemetry response logged.`);
             return new Response("Success", {status: 200});
         }
         
