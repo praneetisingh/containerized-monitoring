@@ -1,6 +1,78 @@
 const injectedMonitor = '__MONITOR_API_URL__';
 const MONITOR_API = injectedMonitor.startsWith('__') ? 'http://localhost:8001' : injectedMonitor;
 
+// ==========================================
+// VERCEL PRODUCTION MOCK INTERCEPTOR
+// ==========================================
+// If this dashboard is deployed to Vercel (not localhost), we emulate the Python Backends 
+// natively in JS so the teacher's presentation works perfectly without needing expensive cloud servers.
+const IS_SERVERLESS = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+
+let mockLogs = [];
+let mockHealth = 100;
+
+if (IS_SERVERLESS) {
+    console.warn("SERVERLESS MODE ENGAGED. Emulating Python Microservices locally.");
+    
+    // Override the native fetch API
+    const originalFetch = window.fetch;
+    window.fetch = async function() {
+        const url = arguments[0];
+        
+        // Emulate /summary
+        if (url.includes('/summary')) {
+            let errs = mockLogs.filter(l => l.includes('ERROR')).length;
+            let crits = mockLogs.filter(l => l.includes('CRITICAL')).length;
+            return new Response(JSON.stringify({ INFO: 10, WARNING: 5, ERROR: errs, CRITICAL: crits }), { status: 200, headers: {'Content-Type': 'application/json'} });
+        }
+        
+        // Emulate /api/analytics
+        if (url.includes('/analytics')) {
+            let errs = mockLogs.filter(l => l.includes('ERROR')).length;
+            let crits = mockLogs.filter(l => l.includes('CRITICAL')).length;
+            mockHealth = 100 - (errs * 2) - (crits * 5);
+            if (mockHealth < 0) mockHealth = 0;
+            if (mockLogs.length === 0) mockHealth = 100;
+            return new Response(JSON.stringify({ 
+                health_score: mockHealth, summary: {ERROR: errs, CRITICAL: crits}, total_analyzed: mockLogs.length 
+            }), { status: 200, headers: {'Content-Type': 'application/json'} });
+        }
+        
+        // Emulate /metrics (Hardware)
+        if (url.includes('/metrics')) {
+            return new Response(JSON.stringify({ cpu: Math.random() * 40 + 10, ram: Math.random() * 30 + 40 }), { status: 200, headers: {'Content-Type': 'application/json'} });
+        }
+        
+        // Emulate /logs endpoint
+        if (url.endsWith('/logs') && arguments[1]?.method === 'DELETE') {
+            mockLogs = [];
+            return new Response(null, {status: 200});
+        }
+        if (url.includes('/logs')) {
+            return new Response(JSON.stringify(mockLogs.slice(-50)), { status: 200, headers: {'Content-Type': 'application/json'} });
+        }
+        
+        // Emulate Log Ingestion
+        if (url.includes('/logs/ingest')) {
+            const body = JSON.parse(arguments[1].body);
+            mockLogs.push(body.log);
+            return new Response(null, {status: 201});
+        }
+        
+        // Emulate basic routing
+        if (url.includes(USER_SERVICE) || url.includes(ORDER_SERVICE)) {
+            // Randomly succeed or fail
+            if (Math.random() > 0.8) {
+                return new Response("Error", {status: 500});
+            }
+            return new Response("Success", {status: 200});
+        }
+        
+        return originalFetch.apply(this, arguments);
+    };
+}
+// ==========================================
+
 const injectedUser = '__USER_SERVICE_URL__';
 const USER_SERVICE = injectedUser.startsWith('__') ? 'http://localhost:5001' : injectedUser;
 
